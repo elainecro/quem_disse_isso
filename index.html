@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Isso é bom ou ruim?</title>
+<meta name="description" content="Escolha uma carta, diga se a proposta é boa ou ruim e descubra quem defende.">
+<style>
+  :root {
+    --bg: #f6f1ea;
+    --papel: #ffffff;
+    --tinta: #1d1b19;
+    --suave: #6b645c;
+    --linha: #d9d0c4;
+    --vinho: #9b1c22;
+    --verde: #1f7a4a;
+    --sombra: 0 2px 10px rgba(0,0,0,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17140f;
+      --papel: #24201b;
+      --tinta: #f2ece4;
+      --suave: #a89f94;
+      --linha: #3d362e;
+      --vinho: #e0565c;
+      --verde: #4cc27f;
+      --sombra: 0 2px 10px rgba(0,0,0,.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--tinta);
+    font: 17px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.8rem; margin: 0 0 4px; }
+  h1 span { color: var(--vinho); }
+  .sub { color: var(--suave); margin: 0 0 20px; }
+  button { font: inherit; cursor: pointer; }
+  .acoes { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+  .btn {
+    border: 1px solid var(--linha);
+    background: var(--papel);
+    color: var(--tinta);
+    padding: 10px 16px;
+    border-radius: 10px;
+  }
+  a.btn { display: inline-block; text-decoration: none; }
+  .btn.forte { background: var(--vinho); border-color: var(--vinho); color: #fff; }
+  .btn:disabled { opacity: .5; cursor: default; }
+
+  .grade {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 10px;
+  }
+  .grade button {
+    aspect-ratio: 5 / 7;
+    border: 1px solid var(--linha);
+    border-radius: 10px;
+    background: var(--papel);
+    color: var(--tinta);
+    font-size: 1.3rem;
+    font-weight: 600;
+    box-shadow: var(--sombra);
+  }
+  .grade button.jogada { opacity: .35; font-size: 1rem; }
+
+  .placar {
+    margin-top: 24px;
+    padding: 14px 16px;
+    background: var(--papel);
+    border: 1px solid var(--linha);
+    border-radius: 12px;
+  }
+  .placar h2 { font-size: 1rem; margin: 0 0 6px; }
+  .placar p { margin: 4px 0; }
+
+  /* carta aberta */
+  .mesa {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    overflow-y: auto;
+    display: none;
+  }
+  .mesa.aberta { display: block; }
+  .mesa-dentro { max-width: 520px; margin: 0 auto; padding: 16px 16px 40px; }
+  .voltar { background: none; border: 0; color: var(--suave); padding: 6px 0; margin-bottom: 8px; }
+
+  .carta {
+    background: var(--papel);
+    border: 1px solid var(--linha);
+    border-radius: 18px;
+    box-shadow: var(--sombra);
+    padding: 22px 20px;
+    text-align: center;
+  }
+  .carta .num { color: var(--suave); font-size: .9rem; margin: 0; }
+  .carta .pergunta { color: var(--vinho); font-weight: 600; margin: 6px 0 14px; }
+  .carta blockquote { font-size: 1.3rem; margin: 0 0 14px; }
+  .carta .tema { color: var(--suave); font-size: .85rem; margin: 0; }
+
+  .voto { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+  .voto button {
+    padding: 16px 10px;
+    border-radius: 14px;
+    border: 2px solid var(--linha);
+    background: var(--papel);
+    color: var(--tinta);
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+  .voto .bom { border-color: var(--verde); color: var(--verde); }
+  .voto .ruim { border-color: var(--vinho); color: var(--vinho); }
+
+  .revela { margin-top: 18px; text-align: center; animation: surge .35s ease-out; }
+  @keyframes surge { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .revela .quem-label { color: var(--suave); margin: 0; }
+  .revela .quem { font-size: 1.9rem; font-weight: 700; color: var(--vinho); margin: 0 0 4px; }
+  .revela .seu-voto { color: var(--suave); margin: 0 0 14px; }
+  .video {
+    position: relative; width: 100%;
+    aspect-ratio: 9 / 16; max-height: 70vh;
+    margin: 0 auto 14px;
+    border-radius: 14px; overflow: hidden;
+    background: #000;
+  }
+  .video.horizontal { aspect-ratio: 16 / 9; }
+  .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .sem-video { margin-bottom: 14px; }
+  .rodape { margin-top: 32px; color: var(--suave); font-size: .85rem; }
+  .rodape a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Isso é <span>bom ou ruim?</span></h1>
+  <p class="sub">Escolha uma carta, leia a proposta e diga o que você acha. Só depois de votar você descobre quem defende.</p>
+
+  <div class="acoes">
+    <button class="btn forte" id="sortear">Sortear uma carta</button>
+    <button class="btn" id="recomecar">Recomeçar</button>
+  </div>
+
+  <div class="grade" id="grade"></div>
+
+  <section class="placar" id="placar" hidden>
+    <h2>O que você achou bom</h2>
+    <div id="placar-linhas"></div>
+  </section>
+
+  <p class="rodape">
+    Baseado no baralho "Isso é bom ou ruim?", que circula em PDF para imprimir.
+    Os vídeos de cada carta vêm dos QR Codes do baralho original.
+  </p>
+</main>
+
+<div class="mesa" id="mesa" role="dialog" aria-modal="true">
+  <div class="mesa-dentro">
+    <button class="voltar" id="voltar">← Voltar para as cartas</button>
+    <article class="carta">
+      <p class="num" id="c-num"></p>
+      <p class="pergunta">Isso é bom ou ruim?</p>
+      <blockquote id="c-frase"></blockquote>
+      <p class="tema" id="c-tema"></p>
+    </article>
+    <div class="voto" id="voto">
+      <button class="bom" data-voto="bom">👍 Bom</button>
+      <button class="ruim" data-voto="ruim">👎 Ruim</button>
+    </div>
+    <div class="revela" id="revela" hidden>
+      <p class="quem-label">Quem defende isso:</p>
+      <p class="quem" id="r-quem"></p>
+      <p class="seu-voto" id="r-voto"></p>
+      <div id="r-video"></div>
+      <button class="btn forte" id="proxima">Próxima carta</button>
+    </div>
+  </div>
+</div>
+
+<script src="cartas.js"></script>
+<script>
+  const CHAVE = "bom-ou-ruim-v1";
+  const $ = (id) => document.getElementById(id);
+
+  function embaralhar(lista) {
+    const a = lista.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // A ordem é sorteada a cada partida: o número que a pessoa vê não é o
+  // número original da carta, senão dava para adivinhar a resposta.
+  function novaPartida() {
+    return { ordem: embaralhar(CARTAS.map((c) => c.numero)), votos: {} };
+  }
+
+  function carregar() {
+    try {
+      const salvo = JSON.parse(localStorage.getItem(CHAVE));
+      if (salvo && Array.isArray(salvo.ordem) && salvo.ordem.length === CARTAS.length) return salvo;
+    } catch (e) {}
+    return novaPartida();
+  }
+
+  function salvar() {
+    try { localStorage.setItem(CHAVE, JSON.stringify(estado)); } catch (e) {}
+  }
+
+  let estado = carregar();
+  let aberta = null; // posição (0..31) da carta aberta
+
+  const cartaPorNumero = (n) => CARTAS.find((c) => c.numero === n);
+
+  function desenharGrade() {
+    const grade = $("grade");
+    grade.innerHTML = "";
+    estado.ordem.forEach((numero, pos) => {
+      const b = document.createElement("button");
+      const jogada = numero in estado.votos;
+      b.textContent = jogada ? (estado.votos[numero] === "bom" ? "👍" : "👎") : pos + 1;
+      b.className = jogada ? "jogada" : "";
+      b.setAttribute("aria-label", `Carta ${pos + 1}` + (jogada ? " (já jogada)" : ""));
+      b.onclick = () => abrir(pos);
+      grade.appendChild(b);
+    });
+    $("sortear").disabled = restantes().length === 0;
+    desenharPlacar();
+  }
+
+  function restantes() {
+    return estado.ordem.map((n, pos) => pos).filter((pos) => !(estado.ordem[pos] in estado.votos));
+  }
+
+  function desenharPlacar() {
+    const linhas = Object.keys(QUEM).map((chave) => {
+      const votadas = CARTAS.filter((c) => c.quem === chave && c.numero in estado.votos);
+      const boas = votadas.filter((c) => estado.votos[c.numero] === "bom").length;
+      return { nome: QUEM[chave], boas, total: votadas.length };
+    }).filter((l) => l.total > 0);
+    $("placar").hidden = linhas.length === 0;
+    $("placar-linhas").innerHTML = linhas
+      .map((l) => `<p><strong>${l.nome}</strong>: ${l.boas} de ${l.total} ${l.total === 1 ? "proposta" : "propostas"}</p>`)
+      .join("");
+  }
+
+  // Transforma o endereço do vídeo num player embutido, quando a plataforma permite.
+  function player(url) {
+    let m;
+    if ((m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/))([\w-]{11})/))) {
+      const vertical = /shorts\//.test(url);
+      return { src: `https://www.youtube-nocookie.com/embed/${m[1]}?autoplay=1&playsinline=1&rel=0`, vertical };
+    }
+    if ((m = url.match(/instagram\.com\/(?:[\w.]+\/)?(?:reel|reels|p|tv)\/([\w-]+)/))) {
+      return { src: `https://www.instagram.com/reel/${m[1]}/embed`, vertical: true };
+    }
+    if ((m = url.match(/tiktok\.com\/@[\w.]+\/video\/(\d+)/))) {
+      return { src: `https://www.tiktok.com/embed/v2/${m[1]}`, vertical: true };
+    }
+    return null;
+  }
+
+  function abrir(pos) {
+    aberta = pos;
+    const carta = cartaPorNumero(estado.ordem[pos]);
+    $("c-num").textContent = `Carta ${pos + 1}`;
+    $("c-frase").textContent = `“${carta.frase}”`;
+    $("c-tema").textContent = `#${carta.tema}`;
+    const voto = estado.votos[carta.numero];
+    if (voto) revelar(carta, voto, false);
+    else { $("voto").hidden = false; $("revela").hidden = true; $("r-video").innerHTML = ""; }
+    $("mesa").classList.add("aberta");
+    $("mesa").scrollTop = 0;
+    document.body.style.overflow = "hidden";
+  }
+
+  function fechar() {
+    $("mesa").classList.remove("aberta");
+    $("r-video").innerHTML = ""; // para o vídeo
+    document.body.style.overflow = "";
+    aberta = null;
+    desenharGrade();
+  }
+
+  function revelar(carta, voto, tocar) {
+    $("voto").hidden = true;
+    $("revela").hidden = false;
+    $("r-quem").textContent = QUEM[carta.quem];
+    $("r-voto").textContent = `Você achou ${voto}.`;
+    const area = $("r-video");
+    area.innerHTML = "";
+    const p = carta.video && player(carta.video);
+    if (p) {
+      const box = document.createElement("div");
+      box.className = "video" + (p.vertical ? "" : " horizontal");
+      const f = document.createElement("iframe");
+      f.src = tocar ? p.src : p.src.replace("autoplay=1", "autoplay=0");
+      f.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+      f.allowFullscreen = true;
+      f.title = `Vídeo: ${QUEM[carta.quem]}`;
+      box.appendChild(f);
+      area.appendChild(box);
+    } else {
+      const a = document.createElement("a");
+      a.className = "btn sem-video";
+      a.href = carta.video || carta.link;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.textContent = "▶ Ver o vídeo";
+      const wrap = document.createElement("p");
+      wrap.appendChild(a);
+      area.appendChild(wrap);
+    }
+    $("proxima").hidden = restantes().length === 0;
+  }
+
+  $("voto").addEventListener("click", (e) => {
+    const voto = e.target.closest("button")?.dataset.voto;
+    if (!voto || aberta === null) return;
+    const carta = cartaPorNumero(estado.ordem[aberta]);
+    estado.votos[carta.numero] = voto;
+    salvar();
+    revelar(carta, voto, true);
+  });
+
+  function sortear() {
+    const livres = restantes();
+    if (livres.length) abrir(livres[Math.floor(Math.random() * livres.length)]);
+  }
+
+  $("sortear").onclick = sortear;
+  $("proxima").onclick = () => { $("r-video").innerHTML = ""; sortear(); };
+  $("voltar").onclick = fechar;
+  $("recomecar").onclick = () => {
+    if (!confirm("Apagar seus votos e embaralhar de novo?")) return;
+    estado = novaPartida();
+    salvar();
+    desenharGrade();
+  };
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && aberta !== null) fechar(); });
+
+  desenharGrade();
+</script>
+</body>
+</html>
