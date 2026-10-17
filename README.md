@@ -14,13 +14,17 @@ não é o número do baralho impresso, senão dava pra adivinhar a resposta
 - `cartas.js`: as 32 cartas. Cada uma tem a frase, o tema, quem defende,
   o `link` lido do QR Code do verso e um campo `video`.
 
-## Vídeos
+## Fontes
 
-Os QR Codes apontam para links encurtados do Linktree (`tr.ee/...`). Enquanto
-o campo `video` estiver `null`, a página mostra um botão "Ver o vídeo" que abre
-esse link. Para o vídeo tocar dentro da página, troque `null` pelo endereço
-final do vídeo. Funciona com YouTube (inclusive Shorts), Instagram (reel/post)
-e TikTok.
+Os QR Codes apontam pra links encurtados do Linktree (`tr.ee/...`), que estão
+no campo `link`. O campo `fonte` guarda pra onde cada um leva. Só 5 das 32
+cartas levam a vídeo (cartas 1, 20 e 23 no Facebook, 19 e 32 no Instagram).
+Essas aparecem com o player embutido. As outras levam a notícias ou páginas
+de governo e aparecem com um botão "Ver a fonte".
+
+A carta 2 leva a um link `share.google` que ainda não foi resolvido.
+
+A página também embute YouTube e TikTok, caso alguma fonte seja trocada.
 
 ## Publicar no GitHub Pages
 
